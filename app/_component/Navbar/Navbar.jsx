@@ -30,9 +30,9 @@ const {numberOfCartItem} = useContext(CartContext);
            {session &&  <li>
               <Link className=" relative" href={"/cart"}>Cart {numberOfCartItem > 0 && <span className=" absolute top-[-13px] right-[-13px] bg-cyan-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs ml-1">{numberOfCartItem}</span>}</Link>
             </li>}
-            <li>
+            {/* <li>
               <Link href={"/categories"}>Categories</Link>
-            </li>
+            </li> */}
             <li>
               <Link href={"/brands"}>Brands</Link>
             </li>
