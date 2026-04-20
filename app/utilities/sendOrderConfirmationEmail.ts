@@ -15,10 +15,12 @@ const transporter = nodemailer.createTransport({
 export async function sendOrderConfirmationEmail(
   email: string,
   cartId: string,
-  orderDetails: { details: string; phone: string; city: string }
+  orderDetails: { details: string; phone: string; city: string },
 ) {
   if (!process.env.EMAIL_FROM) {
-    console.error("Missing EMAIL_FROM environment variable for order confirmation email.");
+    console.error(
+      "Missing EMAIL_FROM environment variable for order confirmation email.",
+    );
     return;
   }
 
@@ -41,7 +43,7 @@ export async function sendOrderConfirmationEmail(
     from: process.env.EMAIL_FROM,
     to: email,
     subject: "تأكيد طلبك - تم استلام الطلب",
-    text: `شكراً لطلبك!\n\nمعرف الطلب: ${cartId}\nالمدينة: ${orderDetails.city}\nرقم الهاتف: ${orderDetails.phone}\nالتفاصيل: ${orderDetails.details}\n\nسوف نتواصل معك قريباً بعد تأكيد الدفع.",
+    text: `شكراً لطلبك!\n\nمعرف الطلب: ${cartId}\nالمدينة: ${orderDetails.city}\nرقم الهاتف: ${orderDetails.phone}\nالتفاصيل: ${orderDetails.details}\n\nسوف نتواصل معك قريباً بعد تأكيد الدفع.`,
     html,
   });
 }
