@@ -28,7 +28,7 @@ export default function CategorySweper({ data }: CategorySweperProps) {
         {data.map((category: Category) => (
           <SwiperSlide key={category._id}>
             <div className="flex flex-col items-center">
-              <div className="h-24 w-24 overflow-hidden rounded-full border border-gray-200 md:h-28 md:w-28 lg:h-32 lg:w-32">
+              <div className="h-24 w-24 overflow-hidden border border-gray-200 md:h-28 md:w-28 lg:h-32 lg:w-32">
                 {category.image ? (
                   <img
                     src={category.image}
@@ -41,9 +41,6 @@ export default function CategorySweper({ data }: CategorySweperProps) {
                   </div>
                 )}
               </div>
-              <p className="mt-2 text-center text-xs font-medium md:text-sm">
-                {category.name}
-              </p>
             </div>
           </SwiperSlide>
         ))}
