@@ -28,7 +28,9 @@ export default async function BrandsIndex() {
                 href={`/brands/${b._id}`}
                 className={`${brandInfo.color} border-2 border-gray-200 rounded-lg p-6 text-center hover:shadow-xl transition-all hover:scale-105`}
               >
-                <div className="text-5xl mb-3 flex justify-center">{brandInfo.icon}</div>
+                <div className="text-5xl mb-3 flex justify-center">
+                  <img src={brandInfo.icon} alt={brandInfo.name} className="w-16 h-16 object-contain" />
+                </div>
                 <div className="font-bold text-lg text-gray-800">{brandInfo.name}</div>
                 <p className="text-sm text-gray-600 mt-2">Click to explore</p>
               </Link>
