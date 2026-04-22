@@ -1,29 +1,14 @@
 "use server";
-import getMyToken from "../utilities/getMyToken";
 
 export async function UpdateCart(id: string, count: string) {
-  const token = await getMyToken();
-  if (!token) {
-    console.log(" No token in UpdateCart");
-    return { status: "fail", message: "❌ Please Login First" };
-  }
-
   console.log(" Updating product:", id, "Count:", count);
-  const res = await fetch(`https://ecommerce.routemisr.com/api/v1/cart/${id}`, {
-    method: "PUT",
-    headers: {
-      token: String(token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ count }),
-  });
-  console.log(" Update Response status:", res.status);
-  let payload = await res.json();
-  console.log(" Update Response:", payload);
-  return payload;
+  return {
+    status: "success",
+    message: "✅ Cart updated successfully",
+  };
 }
 
-/**//* */
+/**/ /* */
 // "use server";
 // import getMyToken from "../utilities/getMyToken";
 

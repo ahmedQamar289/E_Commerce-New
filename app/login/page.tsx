@@ -28,6 +28,29 @@ export default function Login() {
 
   async function handleLogin(values: LoginSchemaValues) {
     try {
+      // التحقق من أن المستخدم مسجل
+      const savedUser = localStorage.getItem("user_" + values.email);
+      if (!savedUser) {
+        toast.error("❌ Email not registered. Please register first!", {
+          position: "top-center",
+          duration: 2000,
+        });
+        router.push("/register");
+        return;
+      }
+
+      const userData = JSON.parse(savedUser);
+      
+      // التحقق من كلمة المرور
+      if (userData.password !== values.password) {
+        toast.error("❌ Wrong password!", {
+          position: "top-center",
+          duration: 2000,
+        });
+        return;
+      }
+
+      // تسجيل الدخول
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -38,7 +61,11 @@ export default function Login() {
         throw new Error(result.error);
       }
 
-        toast.success("✅ Login successful!", {
+      // حفظ حالة المستخدم في localStorage
+      localStorage.setItem("loggedInUser", values.email);
+      localStorage.setItem("userToken", userData.email);
+
+      toast.success("✅ Login successful!", {
         position: "top-center",
         duration: 2000,
       });
@@ -46,7 +73,7 @@ export default function Login() {
       router.refresh();
     } catch (error: any) {
       const message = error?.message || "❌ Login failed";
-      toast.error("❌"+message, {
+      toast.error("❌" + message, {
         position: "top-center",
         duration: 2000,
       });

@@ -10,11 +10,20 @@ export interface Product {
 }
 
 export default async function getProducts(): Promise<Product[]> {
-  const response = await fetch("https://ecommerce.routemisr.com/api/v1/products", {
+  const response = await fetch("https://dummyjson.com/products?limit=100", {
     method: "GET",
     next: { revalidate: 60 },
   });
 
-  const { data } = await response.json();
-  return data as Product[];
+  const { products } = await response.json();
+  return products.map((p: any) => ({
+    id: p.id.toString(),
+    title: p.title,
+    imageCover: p.thumbnail,
+    price: p.price,
+    ratingsAverage: p.rating,
+    category: {
+      name: p.category,
+    },
+  })) as Product[];
 }

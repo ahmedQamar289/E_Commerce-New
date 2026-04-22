@@ -35,18 +35,32 @@ export default function RegisterPage() {
 
   async function handleRegister(values: RegisterSchemaValues) {
     console.log(values)
- try{
-    let res= await axios.post("https://ecommerce.routemisr.com/api/v1/auth/signup", values)
-if(res.data.message === "success"){
-  toast.success("✅Registration successful!",
-    {position:"top-center",duration:2000})
- }
- router.push('/login')
-
-  }catch(error:any){
-toast.error("❌" + error.response.data.message,
-  {position:"top-center",duration:2000})
-  }}
+    try {
+      // Simulate registration by storing user data in localStorage
+      const userData = {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        password: values.password,
+      }
+      
+      // Store in localStorage
+      localStorage.setItem('user_' + values.email, JSON.stringify(userData))
+      localStorage.setItem('loggedInUser', values.email)
+      
+      toast.success("✅ Registration successful!", {
+        position: "top-center",
+        duration: 2000,
+      })
+      
+      router.push('/login')
+    } catch (error: any) {
+      toast.error("❌ Registration failed", {
+        position: "top-center",
+        duration: 2000,
+      })
+    }
+  }
 
   return (
     <div className="flex items-center justify-center">

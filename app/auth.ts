@@ -20,33 +20,23 @@ export const authOptions: NextAuthOptions = {
         password: {},
       },
       async authorize(credentials) {
-        const apiBaseUrl =
-          process.env.API_URL ??
-          process.env.NEXT_PUBLIC_API_URL ??
-          "https://ecommerce.routemisr.com/api/v1";
+        // Simulate authentication with a dummy token
+        // In a real app, you would validate against your backend
 
-        const response = await fetch(`${apiBaseUrl}/auth/signin`, {
-          method: "POST",
-          body: JSON.stringify({
-            email: credentials?.email,
-            password: credentials?.password,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const payload = (await response.json()) as LoginResponse;
-
-        if (!response.ok || !payload.token || !payload.user) {
-          throw new Error(payload.message || "Login failed");
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
         }
 
+        // Generate a dummy token
+        const dummyToken = Buffer.from(
+          `${credentials.email}:${Date.now()}`,
+        ).toString("base64");
+
         return {
-          id: String(payload.user.id),
-          name: payload.user.name ?? payload.user.email.split("@")[0],
-          email: payload.user.email,
-          token: payload.token,
+          id: credentials.email,
+          name: credentials.email.split("@")[0],
+          email: credentials.email,
+          token: dummyToken,
         };
       },
     }),
@@ -73,5 +63,4 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-
 };

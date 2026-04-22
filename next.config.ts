@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ecommerce.routemisr.com",
+        hostname: "cdn.dummyjson.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.dummyjson.com",
         pathname: "/**",
       },
     ],

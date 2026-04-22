@@ -1,256 +1,213 @@
 "use client"
-import Link from "next/link";
 import React, { useEffect, useState, useContext } from 'react'
-import { authOptions } from '@/app/auth';
-import getMyToken from '../utilities/getMyToken';
-import getloggedUserCart from '../CartActions/getuseerCart.action';
-import { Product } from './../api/products.api';
-import { RemoveFormattingIcon } from 'lucide-react';
-import error from './../products/error';
-import { RemoveItemFromCart } from '../CartActions/removeCatrItem.action';
-import { toast } from 'sonner';
-import { UpdateCart } from '../CartActions/updateCart.action';
-import { Button } from '@/components/ui/button';
-import { ClearCartItem } from '../CartActions/clearCartItem.action';
 import { CartContext } from '../context/CartContext';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-// Define types for cart items returned by the API
-interface CartItem {
-  _id: string;
-  count: number;
+interface CartProduct {
+  id: string;
+  title: string;
+  imageCover: string;
   price: number;
-  product: {
-    id: string;
-    title: string;
-    imageCover: string;
-  };
-}
-
-interface CartResponse {
-  status: string;
-  data?: {
-    products: CartItem[];
-    totalCartPrice?: number;
-    cartId?: string;
-    _id?: string;
-  };
-  message?: string;
+  count: number;
+  category: any;
+  ratingsAverage: number;
 }
 
 export default function Cart() {
-const [products , setProducts] = useState<CartItem[]>([])
-const [isLoading , setIsLoading] = useState<boolean>(true)
-const [removeDiseble , setremoveDiseble] = useState<boolean>(false)
-const [updateDiseble , setUpdateDiseble] = useState<boolean>(false)
-const [lodaingUpdate , setLodaingUpdate] = useState<boolean>(false)
-const [curentId , setCurentId] = useState<string>("")
-const [clearLoading, setClearLoading] = useState<boolean>(false);
-const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
-const [deleteId, setDeleteId] = useState<string>("");
-const { getUserCart: refetchCartCount } = useContext(CartContext);
-const [total, setTotal] = useState<number>(0);
-const [cartId, setCartId] = useState<string>("");
+  const { cartItems, removeFromCart, updateCartItem, getTotalPrice, clearCart } = useContext(CartContext);
+  const [products, setProducts] = useState<CartProduct[]>(cartItems);
+  const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const router = useRouter();
 
- async function getuseerCart(){
-try{
-  const res: CartResponse = await getloggedUserCart();
-  console.log("Cart response data:", res.data);
-  if(res.status === "success" && res.data?.products){
-    const id = res.data._id || res.data.cartId || "";
-    console.log("Cart ID:", id);
-    setTotal(res.data.totalCartPrice || 0);
-    setProducts(res.data.products);
-    setCartId(id);
+  useEffect(() => {
+    setProducts(cartItems);
+    setTotal(getTotalPrice());
     setIsLoading(false);
+  }, [cartItems, getTotalPrice]);
 
+  const handleRemoveProduct = (productId: string) => {
+    removeFromCart(productId);
+    toast.success("✅ Product removed from cart", {
+      position: "top-center",
+      duration: 2000
+    });
+  };
+
+  const handleUpdateQuantity = (productId: string, newCount: number) => {
+    if (newCount < 1) {
+      toast.error("❌ Quantity must be at least 1", {
+        position: "top-center",
+        duration: 2000
+      });
+      return;
+    }
+    updateCartItem(productId, newCount);
+    setTotal(getTotalPrice());
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast.success("✅ Cart cleared successfully", {
+      position: "top-center",
+      duration: 2000
+    });
+  };
+
+  const handleCheckout = () => {
+    if (products.length === 0) {
+      toast.error("❌ Your cart is empty", {
+        position: "top-center",
+        duration: 2000
+      });
+      return;
+    }
+
+    // التحقق من تسجيل الدخول
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (!loggedInUser) {
+      toast.error("❌ Please log in first to checkout", {
+        position: "top-center",
+        duration: 2000
+      });
+      router.push("/login");
+      return;
+    }
+
+    // الذهاب إلى صفحة الدفع
+    router.push("/checkout/payment");
+  };
+
+  if (isLoading) {
+    return <div className="h-screen flex justify-center items-center"><span className="loader"></span></div>
   }
-  
-  }
-  catch(err){
-    console.log(err);
-    setIsLoading(false);
-
-  }
-}
-async function deletProduyct (id:string) {
-  setremoveDiseble(true)
-        setDeleteLoading(true)
-              setDeleteId(id)
-  const res: CartResponse = await RemoveItemFromCart(id);
-if(res.status === "success" && res.data?.products){
-    setProducts(res.data.products);
-  toast.success("✅ Product Deleted successfully",
-    {position:"top-center",duration:2000})
-    getuseerCart()    
-    setremoveDiseble(false)
-    setDeleteLoading(false)
-    await refetchCartCount();
-
-  }else{
-     toast.error("❌ Can't detet this Product Now",
-    {position:"top-center",duration:2000})  
-    setremoveDiseble(false)
-          setDeleteLoading(false)
-
-
-  }
-
-}
-async function updateProduct (id:string,count:string) {
-      if (parseInt(count) < 1) {
-        toast.error("❌ Quantity must be at least 1", {position:"top-center", duration:2000})
-        return;
-      }
-      setUpdateDiseble(true)
-      setCurentId(id)
-      setLodaingUpdate(true)
-  const res: CartResponse = await UpdateCart(id, count);
-if(res.status === "success" && res.data?.products){
-    setProducts(res.data.products)
-  toast.success("✅ Quantity updated successfully",
-    {position:"top-center",duration:2000})
-        getuseerCart()    
-    setUpdateDiseble(false)
-        setLodaingUpdate(false)
-        await refetchCartCount();
-            getloggedUserCart()    
-
-  }else{
-     toast.error("❌ Can't Update this Product Now",
-    {position:"top-center",duration:2000})  
-        setUpdateDiseble(false)
-        setLodaingUpdate(false)
-  }
-      getloggedUserCart()    
-
-}
-async function clear() {
-  setClearLoading(true)
-  const res: { message: string } = await ClearCartItem();
-  if(res.message === "success"){
-    toast.success("✅ Cart cleared successfully",
-    {position:"top-center",duration:2000})
-    setProducts([])
-      setClearLoading(false)
-              await refetchCartCount();
-
-
-  }
-}
-
-useEffect(()=>{
-  getuseerCart()
-},[])
-
-if(isLoading){
-  return <div className="h-screen flex justify-center items-center"><span className="loader"></span></div>
-  
- }
 
   return <>
-  
-{products.length > 0 ?(
-<div className=' w-2/3 mx-auto my-12'>
-<div className=' flex justify-end'>
-<Button
-onClick={()=>clear()}
-className=' bg-red-800 hover:bg-red-600 cursor-pointer my-4'>
-  {clearLoading? ( 
- <i className="fas fa-spinner fa-spin"></i>
- ):(
-  'Clear Cart Item')
-  }
-</Button>
-</div>
-  <h3 className=' text-cyan-800 text-lg font-bold py-5 text-4xl'>Total Cart Price : {total}</h3>
-  <div className="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
-  <table className="w-full text-sm text-left rtl:text-right text-body">
-    <thead className="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
-      <tr>
-        <th scope="col" className="px-16 py-3">
-          <span>Image</span>
-        </th>
-        <th scope="col" className="px-6 py-3 font-medium">
-          Product
-        </th>
-        <th scope="col" className="px-6 py-3 font-medium">
-          Qty
-        </th>
-        <th scope="col" className="px-6 py-3 font-medium">
-          Price
-        </th>
-        <th scope="col" className="px-6 py-3 font-medium">
-          Action
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      {products.map((product: CartItem)=><tr key={product._id} className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
-        <td className="p-4">
-          <img src={product.product.imageCover} className="w-16 md:w-24 max-w-full max-h-full" alt="Apple Watch" />
-        </td>
-        <td className="px-6 py-4 font-semibold text-heading">
-          {product.product.title}
-        </td>
-        <td className="px-6 py-4">
-          <form className="max-w-xs mx-auto">
-            <label htmlFor="counter-input-1" className="sr-only">Choose quantity:</label>
-            <div className="relative flex items-center">
-              <button 
-              disabled ={updateDiseble}
-              onClick={(e)=>{e.preventDefault(); updateProduct(product.product.id, String(product.count-1))}} type="button" id="decrement-button-1" data-input-counter-decrement="counter-input-1" className="disabled:bg-gray-300 disabled:text-gray-500 flex items-center justify-center text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary rounded-full text-sm focus:outline-none h-6 w-6">
-                <svg className="w-3 h-3 text-heading" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width={24} height={24} fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" /></svg>
-              </button>
-              <div>
-            {product.product.id === curentId ? (
-         lodaingUpdate ? (
-      <i className="fas fa-spinner fa-spin"></i>
-          ) : (
-      <span className="mx-3">{product.count}</span>
-         )
-          ) : (
-          <span className="mx-3">{product.count}</span>
-        )}
+    {products.length > 0 ? (
+      <div className='w-full lg:w-2/3 mx-auto my-12 px-4'>
+        <div className='flex justify-between items-center mb-8'>
+          <h1 className='text-3xl font-bold text-cyan-900'>Shopping Cart</h1>
+          <Button
+            onClick={handleClearCart}
+            className='bg-red-600 hover:bg-red-700 cursor-pointer'
+          >
+            Clear Cart
+          </Button>
         </div>
 
-              <button 
-              disabled ={updateDiseble}
-              onClick={(e)=>{e.preventDefault(); updateProduct(product.product.id, String(product.count+1))}} type="button" id="increment-button-1" data-input-counter-increment="counter-input-1" className="disabled:bg-gray-300 disabled:text-gray-500 flex items-center justify-center text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary rounded-full text-sm focus:outline-none h-6 w-6">
-                <svg className="w-3 h-3 text-heading" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width={24} height={24} fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7 7V5" /></svg>
-              </button>
-            </div>
-          </form>
-        </td>
-        <td className="px-6 py-4 font-semibold text-heading">
-          {product.price * product.count} EGP
-        </td>
-        <td className="px-6 py-4">
-          
-         <div>
-           {product.product.id === deleteId ?  (
-            deleteLoading ? (
-  <i className="fas fa-spinner fa-spin"></i>
-) : (
-  <button
-          disabled ={removeDiseble}
-          onClick={()=> deletProduyct(product.product.id)} className=' cursor-pointer text-white text-center bg-cyan-800 rounded-2xl p-3'>remove
-          </button>
-)):(<button
-          disabled ={removeDiseble}
-          onClick={()=> deletProduyct(product.product.id)} className=' cursor-pointer text-white text-center bg-cyan-800 rounded-2xl p-3'>remove
-          </button>)}
-         </div>
-         
-        </td>
-      </tr>) }
-    </tbody>
-  </table>
-</div>
-<Link href={cartId ? `/checkout/${cartId}` : '#'} className="flex justify-end mt-5"> 
-  <Button className=' mt-5 bg-green-700 hover:bg-green-500 cursor-pointer' disabled={!cartId}>Proceed To Checkout</Button>
-  </Link>
-</div>)
-:(<h1 className=' text-4xl text-red-700 font-bold text-center disabled:bg-cyan-200 disabled:text-gray-700'>No Products Added Yet</h1>)}
+        {/* Cart Table */}
+        <div className="relative overflow-x-auto bg-white shadow-lg rounded-lg border border-gray-200 mb-8">
+          <table className="w-full text-sm text-left text-gray-700">
+            <thead className="text-sm bg-cyan-100 border-b border-gray-300">
+              <tr>
+                <th scope="col" className="px-6 py-3 font-bold">Image</th>
+                <th scope="col" className="px-6 py-3 font-bold">Product</th>
+                <th scope="col" className="px-6 py-3 font-bold">Price</th>
+                <th scope="col" className="px-6 py-3 font-bold">Quantity</th>
+                <th scope="col" className="px-6 py-3 font-bold">Total</th>
+                <th scope="col" className="px-6 py-3 font-bold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <img
+                      src={product.imageCover}
+                      alt={product.title}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+                  <td className="px-6 py-4 font-semibold">
+                    <Link href={`/products/${product.id}`} className="text-cyan-700 hover:underline">
+                      {product.title.substring(0, 50)}...
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 font-semibold text-green-600">
+                    ${product.price.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleUpdateQuantity(product.id, product.count - 1)}
+                        className="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value={product.count}
+                        onChange={(e) => handleUpdateQuantity(product.id, parseInt(e.target.value))}
+                        className="w-12 text-center border border-gray-300 rounded"
+                      />
+                      <button
+                        onClick={() => handleUpdateQuantity(product.id, product.count + 1)}
+                        className="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-bold text-gray-900">
+                    ${(product.price * product.count).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleRemoveProduct(product.id)}
+                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
+        {/* Cart Summary */}
+        <div className="bg-cyan-50 border border-cyan-300 rounded-lg p-6 mb-8">
+          <div className="flex justify-between mb-4 text-lg">
+            <span className="font-semibold">Subtotal:</span>
+            <span className="font-bold text-cyan-900">${total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mb-4 text-lg">
+            <span className="font-semibold">Shipping:</span>
+            <span className="font-bold text-green-600">Free</span>
+          </div>
+          <div className="border-t border-cyan-300 pt-4 flex justify-between text-xl">
+            <span className="font-bold">Total:</span>
+            <span className="font-bold text-2xl text-cyan-900">${total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Checkout Button */}
+        <Button
+          onClick={handleCheckout}
+          className='w-full bg-cyan-700 hover:bg-cyan-800 text-white py-3 text-lg font-bold rounded-lg cursor-pointer'
+        >
+          Proceed to Checkout
+        </Button>
+
+        <Link href="/">
+          <Button className="w-full mt-4 bg-gray-400 hover:bg-gray-500 text-white">
+            Continue Shopping
+          </Button>
+        </Link>
+      </div>
+    ) : (
+      <div className="h-screen flex flex-col justify-center items-center">
+        <h2 className="text-3xl font-bold text-gray-700 mb-4">Your cart is empty</h2>
+        <p className="text-gray-500 mb-8">Add some products to get started!</p>
+        <Link href="/">
+          <Button className="bg-cyan-700 hover:bg-cyan-800 text-white px-8 py-3 text-lg">
+            Start Shopping
+          </Button>
+        </Link>
+      </div>
+    )}
   </>
 }
