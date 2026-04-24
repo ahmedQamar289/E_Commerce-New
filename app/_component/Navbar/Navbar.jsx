@@ -11,13 +11,14 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   console.log(session, status);
 
-  function handleSignOut() {
+  async function handleSignOut() {
     const loggedInUser = localStorage.getItem("loggedInUser");
     localStorage.removeItem("loggedInUser");
     if (loggedInUser) {
       localStorage.removeItem("user_" + loggedInUser);
     }
-    signOut({ callbackUrl: "/login" });
+    localStorage.removeItem("cart");
+    await signOut({ callbackUrl: "/login" });
   }
   return (
     <>
