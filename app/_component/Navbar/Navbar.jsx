@@ -11,15 +11,14 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   console.log(session, status);
 
-  // function handleSignOut() {
-  //   localStorage.clear(removeItem("loggedInUser"));
-  //   signOut({ callbackUrl: "/login" });
-  // }
-  async function handleSignOut() {
-  await signOut({ redirect: false });
-  localStorage.removeItem("loggedInUser");
-  signOut({ callbackUrl: "/login" });
-}
+  function handleSignOut() {
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    localStorage.removeItem("loggedInUser");
+    if (loggedInUser) {
+      localStorage.removeItem("user_" + loggedInUser);
+    }
+    signOut({ callbackUrl: "/login" });
+  }
   return (
     <>
       <nav className=" bg-cyan-950 py-2 fixed top-0 left-0 w-full z-50">
