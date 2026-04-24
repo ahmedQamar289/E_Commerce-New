@@ -12,13 +12,13 @@ export default function Navbar() {
   console.log(session, status);
 
   // function handleSignOut() {
-  //   localStorage.removeItem("loggedInUser");
+  //   localStorage.clear(removeItem("loggedInUser"));
   //   signOut({ callbackUrl: "/login" });
   // }
   async function handleSignOut() {
-  await signOut({ redirect: false }); // يمنع الريدايركت التلقائي
+  await signOut({ redirect: false });
   localStorage.removeItem("loggedInUser");
-  window.location.href = "/login"; // تحويل يدوي
+  signOut({ callbackUrl: "/login" });
 }
   return (
     <>
