@@ -12,7 +12,7 @@ export default function Navbar() {
   console.log(session, status);
 
   function handleSignOut() {
-    localStorage.removeItem("userToken");
+    localStorage.removeItem("loggedInUser");
     signOut({ callbackUrl: "/login" });
   }
   return (
