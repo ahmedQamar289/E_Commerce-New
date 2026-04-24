@@ -11,10 +11,15 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   console.log(session, status);
 
-  function handleSignOut() {
-    localStorage.removeItem("loggedInUser");
-    signOut({ callbackUrl: "/login" });
-  }
+  // function handleSignOut() {
+  //   localStorage.removeItem("loggedInUser");
+  //   signOut({ callbackUrl: "/login" });
+  // }
+  async function handleSignOut() {
+  await signOut({ redirect: false }); // يمنع الريدايركت التلقائي
+  localStorage.removeItem("loggedInUser");
+  window.location.href = "/login"; // تحويل يدوي
+}
   return (
     <>
       <nav className=" bg-cyan-950 py-2 fixed top-0 left-0 w-full z-50">
