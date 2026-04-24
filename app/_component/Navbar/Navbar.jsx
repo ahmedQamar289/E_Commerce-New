@@ -12,6 +12,7 @@ export default function Navbar() {
   console.log(session, status);
 
   function handleSignOut() {
+    localStorage.clear();
     signOut({ callbackUrl: "/login" });
   }
   return (
@@ -56,7 +57,7 @@ export default function Navbar() {
               </li>
             </ul>
           </div>
-          <div className="right hidden lg:flex">
+          <div className="right hidden md:flex">
             <ul className="flex gap-8 items-center">
               <li>
                 <Link
@@ -121,7 +122,7 @@ export default function Navbar() {
           </div>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden text-white text-2xl"
+            className="md:hidden text-white text-2xl"
           >
             <i className="fas fa-bars"></i>
           </button>
